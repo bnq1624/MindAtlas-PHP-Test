@@ -3,10 +3,17 @@ include "dbconfig.php";
 
 $conn = getConn();
 
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
 $courses_data_file = "courses.csv";
 # process and insert data to 'Courses' table
 try {
-    # try to open the file
+    if (!is_readable($courses_data_file)) {
+        throw new Exception("The file $courses_data_file does not exist or is not readable.");
+    }
+
     if (($file = fopen($courses_data_file, "r")) === FALSE) {
         throw new Exception("Failed to open the file $courses_data_file");
     }
@@ -19,22 +26,34 @@ try {
         throw new Exception("Failed to prepare the sql statement: " . $conn->error);
     }
 
+    // bind the parameter to the statement
     $stmt->bind_param("s", $description);
 
+    // process through each row of the csv file
     while (($data = fgetcsv($file)) !== FALSE) {
-        $description = $data[0];
+        // validate the row data
+        if (isset($data[0]) && !empty($data[0])) {
+            $description = trim($data[0]);
 
-        if (!$stmt->execute()) {
-            throw new Exception("Failed to execute the statement: " . $stmt->error);
+            // execute the statement
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to execute the statement: " . $stmt->error);
+            }
         }
     }
 
     $stmt->close();
-    echo "Courses inserted successfully.";
-    fclose($file);
-}catch (Exception $e) {
-    echo "Error " . $e->getMessage();
-}
 
-$conn->close();
+    echo "Courses inserted successfully.";
+}catch (Exception $e) {
+    echo "Error inserting courses: " . $e->getMessage();
+}finally {
+    if (isset($file) && is_resource($file)) {
+        fclose($file);
+    }
+
+    if ($conn) {
+        $conn->close();
+    }
+}
 ?>
