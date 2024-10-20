@@ -12,7 +12,7 @@ Step 1: Database Setup
 - Import the 'schema.sql' file from the db folder to create the tables 'Users', 'Courses', 'Enrolments'.
 
 Step 2: Insert Data to the Database
-- Update the database connection settings in PHP/dbconfig.php to match your local setup (servername, username, password, dbname).
+- Update the database connection settings in php/dbconfig.php to match your local setup (servername, username, password, dbname).
 - Run 'insert_users.php', then 'insert_courses.php', then 'insert_enrolments.php' to populate the tables with data
 
 Step 3: View the Enrolment Report
